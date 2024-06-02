@@ -1,32 +1,44 @@
 import React, { useState } from 'react';
 import './booking.css';
 import { Form, FormGroup, ListGroup, ListGroupItem, Button } from 'reactstrap';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 const Booking = ({ tour, avgRating }) => {
   const { price, reviews } = tour;
-  const [formData, setFormData] = useState({
+  const [credentials, setCredentials] = useState({
+    userId: '01',
+    userEmail: 'example@gmail.com',
     fullName: '',
     phone: '',
     bookAt: '',
-    guestSize: '',
+    guestSize: '1',
   });
   const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { id, value } = e.target;
-    setFormData({ ...formData, [id]: value });
+    setCredentials({ ...credentials, [id]: value });
+  };
+
+  const handlePhoneChange = value => {
+    setCredentials({ ...credentials, phone: value });
 
     // Validate phone number
-    if (id === 'phone') {
-      const phoneNumber = parsePhoneNumberFromString(value);
-      if (phoneNumber && phoneNumber.isValid()) {
-        setErrors({ ...errors, phone: '' });
-      } else {
-        setErrors({ ...errors, phone: 'Invalid phone number' });
-      }
+    if (isValidPhoneNumber(value)) {
+      setErrors({ ...errors, phone: '' });
+    } else {
+      setErrors({ ...errors, phone: 'Invalid phone number' });
     }
   };
+
+  //send data to the server
+  const handleClick = e => {
+    e.preventDefault()
+    console.log(credentials);
+  }
+
 
   return (
     <div className='booking'>
@@ -42,7 +54,7 @@ const Booking = ({ tour, avgRating }) => {
       {/* --booking form start-- */}
       <div className="booking__form">
         <h5>Information</h5>
-        <Form className='booking__info--form'>
+        <Form className='booking__info--form' onSubmit={handleClick}>
           <FormGroup>
             <input
               type='text'
@@ -53,12 +65,15 @@ const Booking = ({ tour, avgRating }) => {
             />
           </FormGroup>
           <FormGroup>
-            <input
-              type='tel'
-              placeholder='Phone'
-              id='phone'
-              required
-              onChange={handleChange}
+            <PhoneInput
+              country={'us'}
+              value={credentials.phone}
+              onChange={handlePhoneChange}
+              inputProps={{
+                name: 'phone',
+                required: true,
+                autoFocus: true,
+              }}
             />
             {errors.phone && <div className="error">{errors.phone}</div>}
           </FormGroup>
@@ -80,6 +95,27 @@ const Booking = ({ tour, avgRating }) => {
         </Form>
       </div>
       {/* --booking form end-- */}
+
+      {/* --booking bottom-- */}
+      <div className='booking__bottom'>
+        <ListGroup>
+            <ListGroupItem className='border-0 px-0'>
+                <h5 className='d-flex align-items-center gap-1'>
+                    ${price}<i className="ri-asterisk"></i> 1 person</h5>
+                <span> ${price}</span>
+            </ListGroupItem>
+            <ListGroupItem className='border-0 px-0'>
+                <h5>Service Charge</h5>
+                <span> $10</span>
+            </ListGroupItem>
+            <ListGroupItem className='border-0 px-0 total'>
+                <h5>Total</h5>
+                <span> ${parseInt(price) + 10}</span>
+            </ListGroupItem>
+        </ListGroup>
+
+        <Button className='btn primary__btn w-100 mt-4' onClick={handleClick}>Book Now</Button>
+      </div>
     </div>
   );
 };
