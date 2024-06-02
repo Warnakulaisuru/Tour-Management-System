@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "libphonenumber-js": "^1.11.2",
     "react-social-icons": "^6.16.0",
     "reactstrap": "^9.2.2",
     "remixicon": "^4.2.0"
