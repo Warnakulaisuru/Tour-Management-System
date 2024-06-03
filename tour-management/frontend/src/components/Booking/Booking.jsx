@@ -5,8 +5,12 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 
+import { useNavigate } from 'react-router-dom';
+
 const Booking = ({ tour, avgRating }) => {
   const { price, reviews } = tour;
+  const navigate = useNavigate();
+
   const [credentials, setCredentials] = useState({
     userId: '01',
     userEmail: 'example@gmail.com',
@@ -17,10 +21,14 @@ const Booking = ({ tour, avgRating }) => {
   });
   const [errors, setErrors] = useState({});
 
-  const handleChange = e => {
-    const { id, value } = e.target;
-    setCredentials({ ...credentials, [id]: value });
+  const handleChange = e =>{
+    setCredentials(prev => ({...prev, [e.target.id]: e.target.value}));
   };
+
+  // const handleChange = e => {
+  //   const { id, value } = e.target;
+  //   setCredentials({ ...credentials, [id]: value });
+  // };
 
   const handlePhoneChange = value => {
     setCredentials({ ...credentials, phone: value });
@@ -33,10 +41,14 @@ const Booking = ({ tour, avgRating }) => {
     }
   };
 
+
+  const serviceFee = 10
+  const totalAmount = Number(price) * Number(credentials.guestSize) + Number (serviceFee)
+
   //send data to the server
   const handleClick = e => {
     e.preventDefault()
-    console.log(credentials);
+    navigate('/thank-you');
   }
 
 
@@ -106,11 +118,11 @@ const Booking = ({ tour, avgRating }) => {
             </ListGroupItem>
             <ListGroupItem className='border-0 px-0'>
                 <h5>Service Charge</h5>
-                <span> $10</span>
+                <span> ${serviceFee}</span>
             </ListGroupItem>
             <ListGroupItem className='border-0 px-0 total'>
                 <h5>Total</h5>
-                <span> ${parseInt(price) + 10}</span>
+                <span> ${totalAmount}</span>
             </ListGroupItem>
         </ListGroup>
 
