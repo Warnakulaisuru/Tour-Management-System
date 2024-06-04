@@ -1,28 +1,34 @@
-import React, { useState } from 'react';
-import './booking.css';
-import { Form, FormGroup, ListGroup, ListGroupItem, Button } from 'reactstrap';
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
-import { isValidPhoneNumber } from 'libphonenumber-js';
+import React, { useContext, useState } from "react";
+import "./booking.css";
+import { Form, FormGroup, ListGroup, ListGroupItem, Button } from "reactstrap";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../utils/config";
+import { AuthContext } from "../../context/AuthContext";
+
 
 const Booking = ({ tour, avgRating }) => {
-  const { price, reviews } = tour;
+  const { price, reviews, title } = tour;
   const navigate = useNavigate();
 
-  const [credentials, setCredentials] = useState({
-    userId: '01',
-    userEmail: 'example@gmail.com',
-    fullName: '',
-    phone: '',
-    bookAt: '',
-    guestSize: '1',
+  const { user } = useContext(AuthContext);
+
+  const [booking, setBooking] = useState({
+    userId: user && user._id,
+    userEmail: user && user.emai,
+    tourName: title,
+    fullName: "",
+    phone: "",
+    bookAt: "",
+    guestSize: "1",
   });
   const [errors, setErrors] = useState({});
 
-  const handleChange = e =>{
-    setCredentials(prev => ({...prev, [e.target.id]: e.target.value}));
+  const handleChange = (e) => {
+    setBooking((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
   // const handleChange = e => {
@@ -30,31 +36,52 @@ const Booking = ({ tour, avgRating }) => {
   //   setCredentials({ ...credentials, [id]: value });
   // };
 
-  const handlePhoneChange = value => {
-    setCredentials({ ...credentials, phone: value });
+  const handlePhoneChange = (value) => {
+    setBooking({ ...booking, phone: value });
 
     // Validate phone number
     if (isValidPhoneNumber(value)) {
-      setErrors({ ...errors, phone: '' });
+      setErrors({ ...errors, phone: "" });
     } else {
-      setErrors({ ...errors, phone: 'Invalid phone number' });
+      setErrors({ ...errors, phone: "Invalid phone number" });
     }
   };
 
-
-  const serviceFee = 10
-  const totalAmount = Number(price) * Number(credentials.guestSize) + Number (serviceFee)
+  const serviceFee = 10;
+  const totalAmount =
+    Number(price) * Number(booking.guestSize) + Number(serviceFee);
 
   //send data to the server
-  const handleClick = e => {
-    e.preventDefault()
-    navigate('/thank-you');
-  }
+  const handleClick = async (e) => {
+    e.preventDefault();
+    console.log(booking)
+    try {
+      if (!user || user === undefined || user === null) {
+        alert("Please sign in");
+      }
 
+      const res = await fetch(`${BASE_URL}/booking`, {
+        method: "post",
+        headers: {
+          "content-type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(booking),
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        return alert(result.message);
+      }
+      navigate("/thank-you");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   return (
-    <div className='booking'>
-      <div className='booking__top d-flex align-items-center justify-content-between'>
+    <div className="booking">
+      <div className="booking__top d-flex align-items-center justify-content-between">
         <h3>
           ${price} <span>/per person</span>
         </h3>
@@ -66,40 +93,35 @@ const Booking = ({ tour, avgRating }) => {
       {/* --booking form start-- */}
       <div className="booking__form">
         <h5>Information</h5>
-        <Form className='booking__info--form' onSubmit={handleClick}>
+        <Form className="booking__info--form" onSubmit={handleClick}>
           <FormGroup>
             <input
-              type='text'
-              placeholder='Full Name'
-              id='fullName'
+              type="text"
+              placeholder="Full Name"
+              id="fullName"
               required
               onChange={handleChange}
             />
           </FormGroup>
           <FormGroup>
             <PhoneInput
-              country={'us'}
-              value={credentials.phone}
+              country={"us"}
+              value={booking.phone}
               onChange={handlePhoneChange}
               inputProps={{
-                name: 'phone',
+                name: "phone",
                 required: true,
                 autoFocus: true,
               }}
             />
             {errors.phone && <div className="error">{errors.phone}</div>}
           </FormGroup>
-          <FormGroup className='d-flex align-items-center gap-3'>
+          <FormGroup className="d-flex align-items-center gap-3">
+            <input type="date" id="bookAt" required onChange={handleChange} />
             <input
-              type='date'
-              id='bookAt'
-              required
-              onChange={handleChange}
-            />
-            <input
-              type='number'
-              placeholder='Guest Size'
-              id='guestSize'
+              type="number"
+              placeholder="Guest Size"
+              id="guestSize"
               required
               onChange={handleChange}
             />
@@ -109,24 +131,28 @@ const Booking = ({ tour, avgRating }) => {
       {/* --booking form end-- */}
 
       {/* --booking bottom-- */}
-      <div className='booking__bottom'>
+      <div className="booking__bottom">
         <ListGroup>
-            <ListGroupItem className='border-0 px-0'>
-                <h5 className='d-flex align-items-center gap-1'>
-                    ${price}<i className="ri-asterisk"></i> 1 person</h5>
-                <span> ${price}</span>
-            </ListGroupItem>
-            <ListGroupItem className='border-0 px-0'>
-                <h5>Service Charge</h5>
-                <span> ${serviceFee}</span>
-            </ListGroupItem>
-            <ListGroupItem className='border-0 px-0 total'>
-                <h5>Total</h5>
-                <span> ${totalAmount}</span>
-            </ListGroupItem>
+          <ListGroupItem className="border-0 px-0">
+            <h5 className="d-flex align-items-center gap-1">
+              ${price}
+              <i className="ri-asterisk"></i> 1 person
+            </h5>
+            <span> ${price}</span>
+          </ListGroupItem>
+          <ListGroupItem className="border-0 px-0">
+            <h5>Service Charge</h5>
+            <span> ${serviceFee}</span>
+          </ListGroupItem>
+          <ListGroupItem className="border-0 px-0 total">
+            <h5>Total</h5>
+            <span> ${totalAmount}</span>
+          </ListGroupItem>
         </ListGroup>
 
-        <Button className='btn primary__btn w-100 mt-4' onClick={handleClick}>Book Now</Button>
+        <Button className="btn primary__btn w-100 mt-4" onClick={handleClick}>
+          Book Now
+        </Button>
       </div>
     </div>
   );
