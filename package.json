@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "cors": "^2.8.5",
     "libphonenumber-js": "^1.11.2",
     "mongodb": "6.7",
     "react-phone-input-2": "^2.15.1",

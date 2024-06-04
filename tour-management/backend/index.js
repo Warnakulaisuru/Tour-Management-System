@@ -11,12 +11,22 @@ import reviewRoute from './routes/reviews.js';
 import bookingRoute from './routes/booking.js';
 
 dotenv.config()
-const app = express()
+// const app = express()
+// const port = process.env.PORT || 8000;
+// const corsOption = {
+//     origin:true,
+//     Credentials:true
+// }
+
+const app = express();
 const port = process.env.PORT || 8000;
+
 const corsOption = {
-    origin:true,
-    Credentials:true
-}
+  origin: 'http://localhost:3000',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: 'GET,POST,PUT,DELETE',
+  credentials: true,
+};
 
 // database connection
 
